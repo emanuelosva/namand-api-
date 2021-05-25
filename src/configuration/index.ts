@@ -4,6 +4,7 @@ import { env } from './getEnv.config'
 import { loadPrefix } from './loadPrefix.config'
 
 const prefix = loadPrefix()
+const environment = process.env.NODE_ENV
 
 dotenv.config({
   path: resolve(__dirname, '../../.env'),
@@ -11,6 +12,10 @@ dotenv.config({
 
 export const APP = {
   port: env.number(`${prefix}PORT`, 3000),
+  isDevMode: Object.is(environment, 'development'),
+  isProdMode: Object.is(environment, 'production'),
+  isTestMode: Object.is(environment, 'test'),
+  environment,
 }
 
 export const MONGO_DB = {
