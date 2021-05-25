@@ -1,3 +1,8 @@
+/**
+ * GetEnv.
+ * @description Load typed env vars.
+ */
+
 export const env = {
   number: getEnvNumber,
   string: getEnvString,
