@@ -1,0 +1,11 @@
+
+{
+  "editor.tabSize": 2,
+  "eslint.alwaysShowStatus": true,
+  "editor.codeActionsOnSave": {
+    "source.fixAll.eslint": true
+  },
+  "files.associations": {
+    ".js": "javascript"
+  }
+}
