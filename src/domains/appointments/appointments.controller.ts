@@ -3,13 +3,17 @@ import {
   Get,
   Post,
   Body,
-  Patch,
+  Put,
   Param,
-  Delete,
+  Query,
+  UseInterceptors,
 } from '@nestjs/common'
+import { PaginationInterceptor } from '@namand/interceptors'
+import { PaginationQuery } from '@namand/interfaces'
+import { Pagination } from '@namand/decorators'
+import { ParseToMongoId, ParseToDate, ParseToBool } from '@namand/pipes'
 import { AppointmentsService } from './appointments.service'
-import { CreateAppointmentDto } from './dto/create-appointment.dto'
-import { UpdateAppointmentDto } from './dto/update-appointment.dto'
+import { CreateAppointmentDto, UpdateAppointmentDto } from './dto'
 
 @Controller('appointments')
 export class AppointmentsController {
@@ -21,25 +25,44 @@ export class AppointmentsController {
   }
 
   @Get()
-  findAll() {
-    return this.appointmentsService.findAll()
+  @UseInterceptors(PaginationInterceptor)
+  findAll(
+    @Pagination() pagination: PaginationQuery,
+    @Query('staff') staff?: string,
+    @Query('customer') customer?: string,
+    @Query('service') service?: string,
+    @Query('coupon') coupon?: string,
+    @Query('startTime', ParseToDate) startTime?: Date,
+    @Query('endTime', ParseToDate) endTime?: Date,
+    @Query('active', ParseToBool) active?: boolean,
+  ) {
+    return this.appointmentsService.findMany({
+      ...pagination,
+      staff,
+      customer,
+      service,
+      coupon,
+      startTime,
+      endTime,
+      active,
+    })
   }
 
   @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.appointmentsService.findOne(+id)
+  findOne(@Param('id', ParseToMongoId) id: string) {
+    return this.appointmentsService.findOne(id)
   }
 
-  @Patch(':id')
+  @Put(':id')
   update(
     @Param('id') id: string,
     @Body() updateAppointmentDto: UpdateAppointmentDto,
   ) {
-    return this.appointmentsService.update(+id, updateAppointmentDto)
+    return this.appointmentsService.update(id, updateAppointmentDto)
   }
 
-  @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.appointmentsService.remove(+id)
+  @Put(':id/cancel')
+  cancel(@Param('id') id: string) {
+    return this.appointmentsService.cancel(id)
   }
 }

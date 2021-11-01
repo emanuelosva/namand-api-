@@ -20,10 +20,11 @@ module.exports = {
     '@typescript-eslint/explicit-function-return-type': 'off',
     '@typescript-eslint/explicit-module-boundary-types': 'off',
     '@typescript-eslint/no-explicit-any': 'off',
+    'max-len': ['error', { 'code': 90, 'ignoreUrls': true }],
     'no-console': ['error'],
     'semi': ['error', 'never'],
     'comma-dangle': ['error', 'always-multiline'],
-    'no-use-before-define': ['error', { 'functions': false, 'classes': true, variables: true }],
+    'no-use-before-define': ['error', { 'functions': false, 'classes': false, variables: true }],
     'no-unused-vars': [
       2,
       {

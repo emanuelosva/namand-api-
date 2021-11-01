@@ -3,13 +3,26 @@ import {
   Get,
   Post,
   Body,
-  Patch,
-  Param,
+  Put,
   Delete,
+  Param,
+  Query,
+  UseInterceptors,
+  HttpStatus,
+  HttpCode,
+  UseGuards,
 } from '@nestjs/common'
 import { BusinessService } from './business.service'
-import { CreateBusinessDto } from './dto/create-business.dto'
-import { UpdateBusinessDto } from './dto/update-business.dto'
+import { PaginationInterceptor } from '@namand/interceptors'
+import {
+  CreateBusinessDto,
+  UpdateBusinessDto,
+  UpdateBusinessPasswordDto,
+} from './dto'
+import { Pagination } from '@namand/decorators'
+import { PaginationQuery } from '@namand/interfaces'
+import { ParseToBool, ParseToMongoId } from '@namand/pipes'
+import { JwtAuthGuard } from '@namand/guards'
 
 @Controller('business')
 export class BusinessController {
@@ -21,25 +34,46 @@ export class BusinessController {
   }
 
   @Get()
-  findAll() {
-    return this.businessService.findAll()
+  @UseGuards(JwtAuthGuard)
+  @UseInterceptors(PaginationInterceptor)
+  findAll(@Pagination() pagination: PaginationQuery) {
+    return this.businessService.findAll(pagination)
   }
 
-  @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.businessService.findOne(+id)
+  @Get('/:id')
+  findOne(
+    @Param('id', ParseToMongoId) id: string,
+    @Query('includeStaffs', ParseToBool) includeStaffs: boolean,
+    @Query('includeServices', ParseToBool) includeServices: boolean,
+    @Query('includeAppointments', ParseToBool) includeAppointments: boolean,
+  ) {
+    return this.businessService.findOne(id, {
+      includeStaffs,
+      includeAppointments,
+      includeServices,
+    })
   }
 
-  @Patch(':id')
+  @Put('/:id')
   update(
-    @Param('id') id: string,
+    @Param('id', ParseToMongoId) id: string,
     @Body() updateBusinessDto: UpdateBusinessDto,
   ) {
-    return this.businessService.update(+id, updateBusinessDto)
+    return this.businessService.update(id, updateBusinessDto)
+  }
+
+  @Put('/:id/password')
+  updatePassword(
+    @Param('id', ParseToMongoId) id: string,
+    @Body() updatePasswordDto: UpdateBusinessPasswordDto,
+  ) {
+    return this.businessService.updatePassword(id, updatePasswordDto)
   }
 
   @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.businessService.remove(+id)
+  @HttpCode(HttpStatus.NO_CONTENT)
+  async remove(@Param('id', ParseToMongoId) id: string) {
+    await this.businessService.remove(id)
+    return
   }
 }
